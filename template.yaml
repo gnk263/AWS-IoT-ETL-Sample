@@ -2,10 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: IoT-ETL-Sample
 
-Globals:
-  Function:
-    Timeout: 5
-
 Resources:
   # IoT Topicルール
   EtcGateDataTopicRule:
@@ -55,6 +51,17 @@ Resources:
           SizeInMBs: 50
         CompressionFormat: UNCOMPRESSED
         RoleARN: !GetAtt LocationDataFirehoseDeliveryRole.Arn
+        ProcessingConfiguration:
+          Enabled: true
+          Processors:
+            - Type: Lambda
+              Parameters:
+                - ParameterName: LambdaArn
+                  ParameterValue: !Sub "${EtcGateDataTransformFunction.Arn}:$LATEST"
+                - ParameterName: BufferSizeInMBs
+                  ParameterValue: 2
+                - ParameterName: BufferIntervalInSeconds
+                  ParameterValue: 60
 
   # Kinesis Firehoseに与えるIAMロール
   LocationDataFirehoseDeliveryRole:
@@ -82,6 +89,10 @@ Resources:
                   - s3:ListBucketMultipartUploads
                   - s3:PutObject
                 Resource: !Sub "${EtcGateDataBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !Sub "${EtcGateDataTransformFunction.Arn}:$LATEST"
 
   # データを保存するS3バケット
   EtcGateDataBucket:
@@ -90,10 +101,17 @@ Resources:
       AccessControl: Private
       BucketName: !Sub "etc-gate-data-bucket-${AWS::AccountId}"
 
-  ConvertFunction:
+  # データ変換用のLambda関数
+  EtcGateDataTransformFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: hello_world/
       Handler: app.lambda_handler
       Runtime: python3.7
+      Timeout: 60
 
+  # データ変換用のLambda関数のロググループ
+  EtcGateDataTransformFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${EtcGateDataTransformFunction}"

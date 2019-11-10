@@ -1,42 +1,39 @@
+import base64
 import json
-
-# import requests
+import time
+from datetime import datetime
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    records_length = len(event['records'])
+    print(json.dumps(event))
+    print(f'records_length: {records_length}')
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
+    transformed_data = []
 
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+    for record in event['records']:
+        result = 'Ok'
+        try:
+            payload = json.loads(base64.b64decode(record['data']))
+            payload['feeStationName'] = 'てすと'
+        except Exception as e:
+            print('Convert failed.')
+            print(e)
+            result = 'Ng'
 
-    context: object, required
-        Lambda Context runtime methods and attributes
+        print('transformed data:')
+        print(json.dumps(payload))
 
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
+        data = json.dumps(payload) + '\n'
 
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
+        transformed_data.append({
+            'recordId': record['recordId'],
+            'result': result,
+            'data': base64.b64encode(data.encode('utf-8'))
+        })
 
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
+    print('finish transform.')
 
     return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
+        'records': transformed_data
     }
