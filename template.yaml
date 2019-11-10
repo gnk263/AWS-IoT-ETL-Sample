@@ -81,7 +81,7 @@ Resources:
                   - s3:ListBucket
                   - s3:ListBucketMultipartUploads
                   - s3:PutObject
-                Resource: !GetAtt EtcGateDataBucket.Arn
+                Resource: !Sub "${EtcGateDataBucket.Arn}/*"
 
   # データを保存するS3バケット
   EtcGateDataBucket:
