@@ -39,7 +39,7 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action: kinesis:PutRecord
+                Action: firehose:PutRecord
                 Resource: !GetAtt EtcGateDeliveryStream.Arn
 
   # Kinesis Firehose
