@@ -16,13 +16,14 @@ def lambda_handler(event, context):
         try:
             payload = json.loads(base64.b64decode(record['data']))
             payload['feeStationName'] = 'てすと'
+            data = json.dumps(payload) + '\n'
+
+            print(f'transformed data: {data}')
+
         except Exception as e:
             print(f'Transform failed. {e}')
+            print(f'payload: {payload}')
             result = 'Ng'
-
-        data = json.dumps(payload) + '\n'
-
-        print(f'transformed data: {data}')
 
         transformed_data.append({
             'recordId': record['recordId'],
