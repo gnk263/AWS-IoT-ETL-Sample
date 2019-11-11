@@ -105,10 +105,14 @@ Resources:
   EtcGateDataTransformFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: etc-gate-data-transform-function
       CodeUri: hello_world/
       Handler: app.lambda_handler
       Runtime: python3.7
       Timeout: 60
+      Environment:
+        Variables:
+          ETC_GATE_MANAGEMENT_TABLE_NAME: !Ref EtcGateManagementTable
 
   # データ変換用のLambda関数のロググループ
   EtcGateDataTransformFunctionLogGroup:
