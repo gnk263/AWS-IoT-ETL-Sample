@@ -115,3 +115,12 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${EtcGateDataTransformFunction}"
+
+  # DynamoDBテーブル
+  EtcGateManagementTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: etc-gate-management-table
+      PrimaryKey:
+        Name: serialNumber
+        Type: String
