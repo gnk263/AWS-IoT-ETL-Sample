@@ -110,6 +110,9 @@ Resources:
       Handler: app.lambda_handler
       Runtime: python3.7
       Timeout: 60
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref EtcGateManagementTable
       Environment:
         Variables:
           ETC_GATE_MANAGEMENT_TABLE_NAME: !Ref EtcGateManagementTable
