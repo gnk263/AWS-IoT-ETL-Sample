@@ -6,7 +6,7 @@ from datetime import datetime
 
 def lambda_handler(event, context):
     records_length = len(event['records'])
-    print(json.dumps(event))
+    print(f'event: {json.dumps(event)}')
     print(f'records_length: {records_length}')
 
     transformed_data = []
@@ -17,19 +17,17 @@ def lambda_handler(event, context):
             payload = json.loads(base64.b64decode(record['data']))
             payload['feeStationName'] = 'てすと'
         except Exception as e:
-            print('Convert failed.')
-            print(e)
+            print(f'Transform failed. {e}')
             result = 'Ng'
 
-        print('transformed data:')
-        print(json.dumps(payload))
-
         data = json.dumps(payload) + '\n'
+
+        print(f'transformed data: {data}')
 
         transformed_data.append({
             'recordId': record['recordId'],
             'result': result,
-            'data': base64.b64encode(data.encode('utf-8'))
+            'data': base64.b64encode(data.encode('utf-8')).decode('utf-8')
         })
 
     print('finish transform.')
