@@ -99,7 +99,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: Private
-      BucketName: !Sub "etc-gate-data-bucket-${AWS::AccountId}"
+      BucketName: !Sub "iot-etl-sample-deploy-bucket-${AWS::AccountId}-${AWS::Region}"
 
   # データ変換用のLambda関数
   EtcGateDataTransformFunction:
