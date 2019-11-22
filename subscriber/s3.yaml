@@ -7,3 +7,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub iot-etl-sample-deploy-bucket-${AWS::AccountId}-${AWS::Region}
+
+Outputs:
+  DeployBucketName:
+    Value: !Ref DeployBucket
