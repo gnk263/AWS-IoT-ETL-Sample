@@ -131,3 +131,14 @@ Resources:
       PrimaryKey:
         Name: serialNumber
         Type: String
+
+Outputs:
+  EtcGateDataBucketName:
+    Value: !Ref EtcGateDataBucket
+    Export:
+      Name: !Sub ${AWS::StackName}-EtcGateDataBucketName
+
+  EtcGateDataBucketArn:
+    Value: !GetAtt EtcGateDataBucket.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-EtcGateDataBucketArn
