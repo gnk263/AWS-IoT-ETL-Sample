@@ -1,25 +1,31 @@
 import base64
 import boto3
 import json
+import logging
 import os
 from botocore.exceptions import ClientError
 from datetime import datetime, timezone, timedelta
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 dynamodb = boto3.resource('dynamodb')
 
 
 def lambda_handler(event, context):
     records_length = len(event['records'])
-    print(f'event: {json.dumps(event)}')
-    print(f'records_length: {records_length}')
+    logger.info(f'event: {json.dumps(event)}')
+    logger.info(f'records_length: {records_length}')
 
     transformed_data = []
 
-    for record in event['records']:
+    for index, record in enumerate(event['records']):
         result = 'Ok'
         try:
             # 1件分のデータを取得する
             payload = json.loads(base64.b64decode(record['data']))
+            logger.info(f'[{index + 1}/{records_length}] payload: {json.dumps(payload)}')
+
 
             # シリアル番号を元にDynamoDBからETCゲートの情報を取得する
             device_item = get_item(payload['serialNumber'])
@@ -31,15 +37,15 @@ def lambda_handler(event, context):
             payload['timestring'] = convert_iso_format(payload['timestamp'])
 
             data = json.dumps(payload) + '\n'
-            print(f'transformed data: {data}')
+            logger.info(f'[{index + 1}/{records_length}] transformed: {data}')
         except ClientError as e:
-            print('DynamoDB ClientError:')
-            print(e.response['Error']['Message'])
-            print(f'payload: {payload}')
+            logger.info('DynamoDB ClientError:')
+            logger.info(e.response['Error']['Message'])
+            logger.info(f'payload: {payload}')
             result = 'Ng'
         except Exception as e:
-            print(f'Transform failed. {e}')
-            print(f'payload: {payload}')
+            logger.info(f'Transform failed. {e}')
+            logger.info(f'payload: {payload}')
             result = 'Ng'
 
         # Firehoseに戻すデータを作る
@@ -49,7 +55,7 @@ def lambda_handler(event, context):
             'data': base64.b64encode(data.encode('utf-8')).decode('utf-8')
         })
 
-    print('finish transform.')
+    logger.info('finish transform.')
 
     return {
         'records': transformed_data
