@@ -19,11 +19,13 @@ def lambda_handler(event, context):
     for record in event['records']:
         result = 'Ok'
         try:
+            # 1件分のデータを取得する
             payload = json.loads(base64.b64decode(record['data']))
-            payload['feeStationName'] = 'てすと'
 
+            # シリアル番号を元にDynamoDBからETCゲートの情報を取得する
             device_item = get_item(payload['serialNumber'])
 
+            # データを変換（追加）する
             payload['feeStationNumber'] = device_item['feeStationNumber']
             payload['feeStationName'] = device_item['feeStationName']
             payload['gateNumber'] = int(device_item['gateNumber'])
@@ -40,6 +42,7 @@ def lambda_handler(event, context):
             print(f'payload: {payload}')
             result = 'Ng'
 
+        # Firehoseに戻すデータを作る
         transformed_data.append({
             'recordId': record['recordId'],
             'result': result,
@@ -54,8 +57,10 @@ def lambda_handler(event, context):
 
 
 def get_item(serial_number:int) -> dict:
-    table = dynamodb.Table(os.getenv('ETC_GATE_MANAGEMENT_TABLE_NAME'))
+    table_name = os.getenv('ETC_GATE_MANAGEMENT_TABLE_NAME')
+    table = dynamodb.Table(table_name)
 
+    # DynamoDBからETCゲートの情報を取得する
     res = table.get_item(Key={
         'serialNumber': serial_number
     })
