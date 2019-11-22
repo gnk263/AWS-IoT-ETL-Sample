@@ -20,14 +20,17 @@ def lambda_handler(event, context):
     transformed_data = []
 
     for index, record in enumerate(event['records']):
+        data = {}
         result = 'Ok'
         try:
+            # 現在処理しているデータ（ログ用）
+            log_header = f'[{index + 1}/{records_length}]'
+
             # 1件分のデータを取得する
             payload = json.loads(base64.b64decode(record['data']))
-            logger.info(f'[{index + 1}/{records_length}] payload: {json.dumps(payload)}')
+            logger.info(f'{log_header} payload: {json.dumps(payload)}')
 
-
-            # シリアル番号を元にDynamoDBからETCゲートの情報を取得する
+            # DynamoDBからETCゲートの情報を取得する
             device_item = get_item(payload['serialNumber'])
 
             # データを変換（追加）する
@@ -37,22 +40,21 @@ def lambda_handler(event, context):
             payload['timestring'] = convert_iso_format(payload['timestamp'])
 
             data = json.dumps(payload) + '\n'
-            logger.info(f'[{index + 1}/{records_length}] transformed: {data}')
+            logger.info(f'{log_header} transformed: {data}')
         except ClientError as e:
-            logger.info('DynamoDB ClientError:')
-            logger.info(e.response['Error']['Message'])
-            logger.info(f'payload: {payload}')
+            error_message = e.response['Error']['Message']
+            logger.info(f'DynamoDB ClientError: {error_message}')
             result = 'Ng'
         except Exception as e:
-            logger.info(f'Transform failed. {e}')
-            logger.info(f'payload: {payload}')
+            logger.info(f'Transform failed: {e}')
             result = 'Ng'
 
         # Firehoseに戻すデータを作る
+        data_utf8 = data.encode('utf-8')
         transformed_data.append({
             'recordId': record['recordId'],
             'result': result,
-            'data': base64.b64encode(data.encode('utf-8')).decode('utf-8')
+            'data': base64.b64encode(data_utf8).decode('utf-8')
         })
 
     logger.info('finish transform.')
