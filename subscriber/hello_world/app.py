@@ -2,9 +2,8 @@ import base64
 import boto3
 import json
 import os
-import time
 from botocore.exceptions import ClientError
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -29,6 +28,7 @@ def lambda_handler(event, context):
             payload['feeStationNumber'] = device_item['feeStationNumber']
             payload['feeStationName'] = device_item['feeStationName']
             payload['gateNumber'] = int(device_item['gateNumber'])
+            payload['timestring'] = convert_iso_format(payload['timestamp'])
 
             data = json.dumps(payload) + '\n'
             print(f'transformed data: {data}')
@@ -66,3 +66,10 @@ def get_item(serial_number:int) -> dict:
     })
 
     return res['Item']
+
+
+def convert_iso_format(timestamp:int) -> str:
+    # JSTとするので+9時間する
+    tz = timezone(timedelta(hours=9))
+    timestamp =  datetime.fromtimestamp(timestamp / 1000, tz)
+    return timestamp.isoformat(timespec='milliseconds')
