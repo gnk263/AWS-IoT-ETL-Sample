@@ -67,7 +67,6 @@ Resources:
   # サブネットとインターネットのルーティング
   VirtualIoTRoute:
     Type: AWS::EC2::Route
-    DependsOn: VirtualIoTVPCGatewayAttachment
     Properties:
       RouteTableId: !Ref VirtualIoTRouteTable
       DestinationCidrBlock: 0.0.0.0/0
