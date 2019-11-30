@@ -38,18 +38,18 @@ def lambda_handler(event, context):
             payload['feeStationName'] = device_item['feeStationName']
             payload['gateNumber'] = int(device_item['gateNumber'])
             payload['timestring'] = convert_iso_format(payload['timestamp'])
-
-            logger.info(f'{log_header} transformed: {data}')
         except ClientError as e:
             error_message = e.response['Error']['Message']
-            logger.error(f'DynamoDB ClientError: {error_message}')
+            logger.error(f'{log_header} DynamoDB ClientError: {error_message}')
             result = 'Ng'
         except Exception as e:
-            logger.error(f'Transform failed: {e}')
+            logger.error(f'{log_header} Transform failed: {e}')
             result = 'Ng'
 
         # Firehoseに戻すデータを作る
         data = json.dumps(payload) + '\n'
+        logger.info(f'{log_header} transformed: {data}')
+
         data_utf8 = data.encode('utf-8')
         transformed_data.append({
             'recordId': record['recordId'],
