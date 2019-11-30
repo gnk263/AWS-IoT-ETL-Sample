@@ -23,7 +23,29 @@ ETC_GATE_INFO = {
             'C': 0.1,
             'D': 2.8
         }
-    }
+    },
+    '2222EFGH': {
+        'client_id': 'etc_gate_2222EFGH',
+        'certificate_file': './etc_gate_2222EFGH_certificate.pem',
+        'private_key_file': './etc_gate_2222EFGH_certificate.private',
+        'rate': {
+            'A': 97.0,
+            'B': 0.1,
+            'C': 0.1,
+            'D': 2.8
+        }
+    },
+    '3333IJKL': {
+        'client_id': 'etc_gate_3333IJKL',
+        'certificate_file': './etc_gate_3333IJKL_certificate.pem',
+        'private_key_file': './etc_gate_3333IJKL_certificate.private',
+        'rate': {
+            'A': 90.0,
+            'B': 4.0,
+            'C': 4.0,
+            'D': 2.0
+        }
+    },
 }
 
 FINISH_FILE = './finish.txt'
