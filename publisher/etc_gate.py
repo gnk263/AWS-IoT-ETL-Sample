@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import sys
 import time
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
@@ -16,6 +17,12 @@ ETC_GATE_INFO = {
         'client_id': 'etc_gate_1111ABCD',
         'certificate_file': './etc_gate_1111ABCD_certificate.pem',
         'private_key_file': './etc_gate_1111ABCD_certificate.private',
+        'rate': {
+            'A': 97.0,
+            'B': 0.1,
+            'C': 0.1,
+            'D': 2.8
+        }
     }
 }
 
@@ -37,14 +44,15 @@ def main(serial_number: str) -> None:
         ROOT_CA_FILE,
         private_key_file,
         certificate_file)
-
     client.connect()
 
     while True:
-        data = create_data()
-        client.publish(TOPIC_NAME, json.dumps(data), QOS)
-        time.sleep(1)
+        data = create_data(serial_number)
 
+        # IoT CoreのトピックにPublishする
+        client.publish(TOPIC_NAME, json.dumps(data), QOS)
+
+        time.sleep(1)
         if is_finish():
             break
 
@@ -53,14 +61,43 @@ def init() -> None:
     if os.path.isfile(FINISH_FILE):
         os.remove(FINISH_FILE)
 
-def create_data() -> dict:
+def create_data(serial_number: str) -> dict:
+    num = random.uniform(0, 100)
+    rate = ETC_GATE_INFO[serial_number]['rate']
+
+    (rate_border_a, rate_border_b, rate_border_c) = get_rate_border(rate)
+
+    param = {}
+    if 0 <= num and num < rate_border_a:
+        # パターンA
+        param['open'] = True
+        param['payment'] = True
+    elif rate_border_a <= num < rate_border_b:
+        # パターンB
+        param['open'] = True
+        param['payment'] = False
+    elif rate_border_b <= num < rate_border_c:
+        # パターンC
+        param['open'] = False
+        param['payment'] = True
+    else:
+        # パターンD
+        param['open'] = False
+        param['payment'] = False
+
     return {
         'serialNumber': '1111ABCD',
         'timestamp': int(time.time() * 1000),
-        'open': True,
-        'payment': True
+        'open': param['open'],
+        'payment': param['payment']
     }
 
+def get_rate_border(rate: dict) -> (float, float, float):
+    return (
+        rate['A'],
+        rate['A'] + rate['B'],
+        rate['A'] + rate['B'] + rate['C']
+    )
 
 def is_finish():
     if os.path.isfile(FINISH_FILE):
