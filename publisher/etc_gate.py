@@ -36,6 +36,7 @@ def main(serial_number: str) -> None:
     client.configureCredentials(
         ROOT_CA_FILE,
         private_key_file,
+        certificate_file)
 
     client.connect()
 
