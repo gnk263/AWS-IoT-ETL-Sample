@@ -5,6 +5,7 @@ Resources:
   # Lambdaコード等をデプロイするS3バケット
   DeployBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
     Properties:
       AccessControl: Private
       BucketName: !Sub iot-etl-sample-deploy-bucket-${AWS::AccountId}-${AWS::Region}
