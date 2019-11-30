@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import time
@@ -21,40 +22,40 @@ ETC_GATE_INFO = {
 FINISH_FILE = './finish.txt'
 
 def main(serial_number: str) -> None:
+    init()
+
     client_id = ETC_GATE_INFO[serial_number]['client_id']
     certificate_file = ETC_GATE_INFO[serial_number]['certificate_file']
     private_key_file = ETC_GATE_INFO[serial_number]['private_key_file']
 
     # IoT Coreに接続する
+    # https://github.com/aws/aws-iot-device-sdk-python
     # https://s3.amazonaws.com/aws-iot-device-sdk-python-docs/sphinx/html/index.html
     client = AWSIoTMQTTClient(client_id)
     client.configureEndpoint(IOT_CORE_ENDPOINT, PORT)
     client.configureCredentials(
         ROOT_CA_FILE,
         private_key_file,
-        certificate_file)
-
-    client.configureAutoReconnectBackoffTime(1, 32, 20)
-    client.configureOfflinePublishQueueing(-1)
-    client.configureDrainingFrequency(2)
-    client.configureConnectDisconnectTimeout(10)
-    client.configureMQTTOperationTimeout(5)
 
     client.connect()
 
     while True:
         data = create_data()
-        client.publish(TOPIC_NAME, data, QOS)
+        client.publish(TOPIC_NAME, json.dumps(data), QOS)
         time.sleep(1)
 
         if is_finish():
-            os.remove(FINISH_FILE)
             break
+
+def init() -> None:
+    # もし finish.txt があるなら削除しておく
+    if os.path.isfile(FINISH_FILE):
+        os.remove(FINISH_FILE)
 
 def create_data() -> dict:
     return {
         'serialNumber': '1111ABCD',
-        'timestamp': time.time() * 1000,
+        'timestamp': int(time.time() * 1000),
         'open': True,
         'payment': True
     }
