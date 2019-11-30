@@ -97,6 +97,7 @@ Resources:
   # データを保存するS3バケット
   EtcGateDataBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
     Properties:
       AccessControl: Private
       BucketName: !Sub "iot-etl-sample-etc-gate-data-bucket-${AWS::AccountId}-${AWS::Region}"
