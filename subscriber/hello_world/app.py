@@ -39,7 +39,6 @@ def lambda_handler(event, context):
             payload['gateNumber'] = int(device_item['gateNumber'])
             payload['timestring'] = convert_iso_format(payload['timestamp'])
 
-            data = json.dumps(payload) + '\n'
             logger.info(f'{log_header} transformed: {data}')
         except ClientError as e:
             error_message = e.response['Error']['Message']
@@ -50,6 +49,7 @@ def lambda_handler(event, context):
             result = 'Ng'
 
         # Firehoseに戻すデータを作る
+        data = json.dumps(payload) + '\n'
         data_utf8 = data.encode('utf-8')
         transformed_data.append({
             'recordId': record['recordId'],
