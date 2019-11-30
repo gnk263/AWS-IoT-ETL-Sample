@@ -43,10 +43,10 @@ def lambda_handler(event, context):
             logger.info(f'{log_header} transformed: {data}')
         except ClientError as e:
             error_message = e.response['Error']['Message']
-            logger.info(f'DynamoDB ClientError: {error_message}')
+            logger.error(f'DynamoDB ClientError: {error_message}')
             result = 'Ng'
         except Exception as e:
-            logger.info(f'Transform failed: {e}')
+            logger.error(f'Transform failed: {e}')
             result = 'Ng'
 
         # Firehoseに戻すデータを作る
