@@ -12,7 +12,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
-      ImageId: ami-0064e711cbc7a825e
+      ImageId: ami-052652af12b58691f
       KeyName: !Ref KeyName
       SecurityGroupIds:
         - !Ref VirtualIoTSecurityGroup
